@@ -2,6 +2,7 @@ import logging
 from urllib.parse import quote
 
 from django import http
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.shortcuts import redirect
@@ -512,7 +513,7 @@ class PaymentDetailsView(OrderPlacementMixin, generic.TemplateView):
 
     def submit(self, user, basket, shipping_address, shipping_method,  # noqa (too complex (10))
                shipping_charge, billing_address, order_total,
-               payment_kwargs=None, order_kwargs=None):
+               payment_kwargs=None, order_kwargs=None, surcharges=None):
         """
         Submit a basket for order placement.
 
@@ -608,9 +609,9 @@ class PaymentDetailsView(OrderPlacementMixin, generic.TemplateView):
         except Exception as e:
             # Unhandled exception - hopefully, you will only ever see this in
             # development...
-            logger.error(
+            logger.exception(
                 "Order #%s: unhandled exception while taking payment (%s)",
-                order_number, e, exc_info=True)
+                order_number, e)
             self.restore_frozen_basket()
             return self.render_preview(
                 self.request, error=error_msg, **payment_kwargs)
@@ -623,7 +624,7 @@ class PaymentDetailsView(OrderPlacementMixin, generic.TemplateView):
         try:
             return self.handle_order_placement(
                 order_number, user, basket, shipping_address, shipping_method,
-                shipping_charge, billing_address, order_total, **order_kwargs)
+                shipping_charge, billing_address, order_total, surcharges=surcharges, **order_kwargs)
         except UnableToPlaceOrder as e:
             # It's possible that something will go wrong while trying to
             # actually place an order.  Not a good situation to be in as a
@@ -635,6 +636,12 @@ class PaymentDetailsView(OrderPlacementMixin, generic.TemplateView):
             self.restore_frozen_basket()
             return self.render_preview(
                 self.request, error=msg, **payment_kwargs)
+        except Exception as e:
+            # Hopefully you only ever reach this in development
+            logger.exception("Order #%s: unhandled exception while placing order (%s)", order_number, e)
+            error_msg = _("A problem occurred while placing this order. Please contact customer services.")
+            self.restore_frozen_basket()
+            return self.render_preview(self.request, error=error_msg, **payment_kwargs)
 
     def get_template_names(self):
         return [self.template_name_preview] if self.preview else [
@@ -653,7 +660,14 @@ class ThankYouView(generic.DetailView):
     template_name = 'oscar/checkout/thank_you.html'
     context_object_name = 'order'
 
-    def get_object(self):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object is None:
+            return redirect(settings.OSCAR_HOMEPAGE)
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
+    def get_object(self, queryset=None):
         # We allow superusers to force an order thank-you page for testing
         order = None
         if self.request.user.is_superuser:
@@ -668,9 +682,6 @@ class ThankYouView(generic.DetailView):
             if 'checkout_order_id' in self.request.session:
                 order = Order._default_manager.get(
                     pk=self.request.session['checkout_order_id'])
-            else:
-                raise http.Http404(_("No order found"))
-
         return order
 
     def get_context_data(self, *args, **kwargs):

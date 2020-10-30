@@ -38,8 +38,6 @@ CACHES = {
 # although not all choices may be available on all operating systems.
 # On Unix systems, a value of None will cause Django to use the same
 # timezone as the operating system.
-# If running in a Windows environment this must be set to the same as your
-# system time zone.
 USE_TZ = True
 TIME_ZONE = 'Europe/London'
 
@@ -396,14 +394,6 @@ OSCAR_ORDER_STATUS_CASCADE = {
     'Cancelled': 'Cancelled',
     'Complete': 'Shipped',
 }
-
-# LESS/CSS
-# ========
-
-# We default to using CSS files, rather than the LESS files that generate them.
-# If you want to develop Oscar's CSS, then set OSCAR_USE_LESS=True to enable the
-# on-the-fly less processor.
-OSCAR_USE_LESS = False
 
 # Sorl
 # ====

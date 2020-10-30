@@ -14,7 +14,7 @@ DATABASES = {
                                  'django.db.backends.postgresql'),
         'NAME': os.environ.get('DATABASE_NAME', 'oscar'),
         'USER': os.environ.get('DATABASE_USER', None),
-        'PASSWORD': os.environ.get('DATABASE_USER', None),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', None),
     }
 }
 
@@ -81,6 +81,8 @@ catalogue_app_idx = INSTALLED_APPS.index('oscar.apps.catalogue.apps.CatalogueCon
 INSTALLED_APPS[catalogue_app_idx] = 'tests._site.apps.catalogue.apps.CatalogueConfig'
 dashboard_app_idx = INSTALLED_APPS.index('oscar.apps.dashboard.apps.DashboardConfig')
 INSTALLED_APPS[dashboard_app_idx] = 'tests._site.apps.dashboard.apps.DashboardConfig'
+checkout_app_idx = INSTALLED_APPS.index('oscar.apps.checkout.apps.CheckoutConfig')
+INSTALLED_APPS[checkout_app_idx] = 'tests._site.apps.checkout.apps.CheckoutConfig'
 
 AUTH_USER_MODEL = 'myauth.User'
 
@@ -166,5 +168,7 @@ OSCAR_INITIAL_LINE_STATUS = 'a'
 OSCAR_LINE_STATUS_PIPELINE = {'a': ('b', ), 'b': ()}
 
 SECRET_KEY = 'notverysecret'
+# Deprecated in Django 4.0, then we need to update the hashes to SHA-256 in tests/integration/order/test_models.py
+DEFAULT_HASHING_ALGORITHM = 'sha1'
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 FIXTURE_DIRS = [location('unit/fixtures')]

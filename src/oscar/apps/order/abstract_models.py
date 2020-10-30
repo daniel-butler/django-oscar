@@ -186,14 +186,14 @@ class AbstractOrder(models.Model):
         """
         Return basket total including tax
         """
-        return self.total_incl_tax - self.shipping_incl_tax
+        return self.total_incl_tax - self.shipping_incl_tax - self.surcharge_incl_tax
 
     @property
     def basket_total_excl_tax(self):
         """
         Return basket total excluding tax
         """
-        return self.total_excl_tax - self.shipping_excl_tax
+        return self.total_excl_tax - self.shipping_excl_tax - self.surcharge_excl_tax
 
     @property
     def total_before_discounts_incl_tax(self):
@@ -225,6 +225,14 @@ class AbstractOrder(models.Model):
     @property
     def total_tax(self):
         return self.total_incl_tax - self.total_excl_tax
+
+    @property
+    def surcharge_excl_tax(self):
+        return sum(charge.excl_tax for charge in self.surcharges.all())
+
+    @property
+    def surcharge_incl_tax(self):
+        return sum(charge.incl_tax for charge in self.surcharges.all())
 
     @property
     def num_lines(self):
@@ -393,6 +401,7 @@ class AbstractOrderNote(models.Model):
     class Meta:
         abstract = True
         app_label = 'order'
+        ordering = ['-date_updated']
         verbose_name = _("Order Note")
         verbose_name_plural = _("Order Notes")
 
@@ -425,9 +434,8 @@ class AbstractOrderStatusChange(models.Model):
         ordering = ['-date_created']
 
     def __str__(self):
-        return _('{order} has changed status from {old_status} to {new_status}').format(
-            order=self.order, old_status=self.old_status, new_status=self.new_status
-        )
+        return _("%(order)s has changed status from %(old_status)s to %(new_status)s") \
+            % {'order': self.order, 'old_status': self.old_status, 'new_status': self.new_status, }
 
 
 class AbstractCommunicationEvent(models.Model):
@@ -536,10 +544,6 @@ class AbstractLine(models.Model):
         _("Price before discounts (excl. tax)"),
         decimal_places=2, max_digits=12)
 
-    # Deprecated - will be removed in Oscar 2.1
-    unit_cost_price = models.DecimalField(
-        _("Unit Cost Price"), decimal_places=2, max_digits=12, blank=True,
-        null=True)
     # Normal site price for item (without discounts)
     unit_price_incl_tax = models.DecimalField(
         _("Unit Price (inc. tax)"), decimal_places=2, max_digits=12,
@@ -547,18 +551,10 @@ class AbstractLine(models.Model):
     unit_price_excl_tax = models.DecimalField(
         _("Unit Price (excl. tax)"), decimal_places=2, max_digits=12,
         blank=True, null=True)
-    # Deprecated - will be removed in Oscar 2.1
-    unit_retail_price = models.DecimalField(
-        _("Unit Retail Price"), decimal_places=2, max_digits=12,
-        blank=True, null=True)
 
     # Partners often want to assign some status to each line to help with their
     # own business processes.
     status = models.CharField(_("Status"), max_length=255, blank=True)
-
-    # Deprecated - will be removed in Oscar 2.1
-    est_dispatch_date = models.DateField(
-        _("Estimated Dispatch Date"), blank=True, null=True)
 
     #: Order status pipeline.  This should be a dict where each (key, value)
     #: corresponds to a status and the possible statuses that can follow that
@@ -1129,6 +1125,7 @@ class AbstractOrderDiscount(models.Model):
     class Meta:
         abstract = True
         app_label = 'order'
+        ordering = ['pk']
         verbose_name = _("Order Discount")
         verbose_name_plural = _("Order Discounts")
 
@@ -1169,3 +1166,36 @@ class AbstractOrderDiscount(models.Model):
         if self.voucher_code:
             return self.voucher_code
         return self.offer_name or ""
+
+
+class AbstractSurcharge(models.Model):
+    order = models.ForeignKey(
+        'order.Order',
+        on_delete=models.CASCADE,
+        related_name="surcharges",
+        verbose_name=_("Surcharges"))
+
+    name = models.CharField(
+        _("Surcharge"), max_length=128
+    )
+
+    code = models.CharField(
+        _("Surcharge code"), max_length=128
+    )
+
+    incl_tax = models.DecimalField(
+        _("Surcharge (inc. tax)"), decimal_places=2, max_digits=12,
+        default=0)
+
+    excl_tax = models.DecimalField(
+        _("Surcharge (excl. tax)"), decimal_places=2, max_digits=12,
+        default=0)
+
+    @property
+    def tax(self):
+        return self.incl_tax - self.excl_tax
+
+    class Meta:
+        abstract = True
+        app_label = 'order'
+        ordering = ['pk']

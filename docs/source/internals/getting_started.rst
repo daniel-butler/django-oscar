@@ -24,8 +24,8 @@ project:
 .. code-block:: bash
 
     $ mkvirtualenv oscar
-    $ pip install django-oscar
-    $ django-admin.py startproject frobshop
+    $ pip install django-oscar[sorl-thumbnail]
+    $ django-admin startproject frobshop
 
 If you do not have :command:`mkvirtualenv`, then replace that line with::
 
@@ -35,6 +35,12 @@ If you do not have :command:`mkvirtualenv`, then replace that line with::
 
 This will create a folder ``frobshop`` for your project. It is highly
 recommended to install Oscar in a virtualenv.
+
+.. tip::
+
+    ``sorl-thumbnail`` is an optional dependency for image thumbnail, but is what Oscar expects
+    to use by default. It can be replaced with ``easy-thumbnails`` or a custom thumbnail backend. If you want to
+    use a different backend then remember to change the ``OSCAR_THUMBNAILER`` setting to point to it.
 
 .. attention::
 
@@ -119,7 +125,7 @@ depends on. Also set ``SITE_ID``:
         'widget_tweaks',
         'haystack',
         'treebeard',
-        'sorl.thumbnail',
+        'sorl.thumbnail',   # Default thumbnail backend, can be replaced
         'django_tables2',
     ]
 
@@ -241,18 +247,18 @@ you will also need to include Django's i18n URLs:
 .. code-block:: django
 
     from django.apps import apps
-    from django.urls import include, path  
+    from django.urls import include, path
     from django.contrib import admin
 
     urlpatterns = [
-        path('i18n/', include('django.conf.urls.i18n')),  
+        path('i18n/', include('django.conf.urls.i18n')),
 
         # The Django admin is not officially supported; expect breakage.
         # Nonetheless, it's often useful for debugging.
 
-        path('admin/', admin.site.urls),  
+        path('admin/', admin.site.urls),
 
-        path('', include(apps.get_app_config('oscar').urls[0])),  
+        path('', include(apps.get_app_config('oscar').urls[0])),
     ]
 
 

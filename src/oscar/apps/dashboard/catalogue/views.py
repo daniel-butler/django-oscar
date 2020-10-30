@@ -220,6 +220,9 @@ class ProductCreateUpdateView(generic.UpdateView):
     recommendations_formset = ProductRecommendationFormSet
     stockrecord_formset = StockRecordFormSet
 
+    creating = False
+    parent = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.formsets = {'category_formset': self.category_formset,
@@ -625,6 +628,9 @@ class CategoryUpdateView(CategoryListMixin, generic.UpdateView):
 
     def get_success_url(self):
         messages.info(self.request, _("Category updated successfully"))
+        action = self.request.POST.get('action')
+        if action == 'continue':
+            return reverse('dashboard:catalogue-category-update', kwargs={"pk": self.object.id})
         return super().get_success_url()
 
 
