@@ -265,8 +265,7 @@ class AbstractCategory(MP_Node):
 
     def get_url_cache_key(self):
         current_locale = get_language()
-        cache_key = 'CATEGORY_URL_%s_%s' % (current_locale, self.pk)
-        return cache_key
+        return 'CATEGORY_URL_%s_%s' % (current_locale, self.pk)
 
     def _get_absolute_url(self, parent_slug=None):
         """
@@ -511,7 +510,7 @@ class AbstractProduct(models.Model):
         """
         if not self.parent_id:
             raise ValidationError(_("A child product needs a parent."))
-        if self.parent_id and not self.parent.is_parent:
+        if not self.parent.is_parent:
             raise ValidationError(
                 _("You can only assign child products to parent products."))
         if self.product_class:
@@ -980,7 +979,7 @@ class AbstractProductAttribute(models.Model):
             raise ValidationError(_("Must be a datetime"))
 
     def _validate_boolean(self, value):
-        if not type(value) == bool:
+        if type(value) != bool:
             raise ValidationError(_("Must be a boolean"))
 
     def _validate_entity(self, value):
@@ -1271,7 +1270,7 @@ class MissingProductImage(object):
     """
 
     def __init__(self, name=None):
-        self.name = name if name else settings.OSCAR_MISSING_IMAGE_URL
+        self.name = name or settings.OSCAR_MISSING_IMAGE_URL
         media_file_path = os.path.join(settings.MEDIA_ROOT, self.name)
         # don't try to symlink if MEDIA_ROOT is not set (e.g. running tests)
         if settings.MEDIA_ROOT and not os.path.exists(media_file_path):

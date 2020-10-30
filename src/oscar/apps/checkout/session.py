@@ -388,11 +388,13 @@ class CheckoutSessionMixin(object):
         """
         if not self.checkout_session.is_billing_address_set():
             return None
-        if self.checkout_session.is_billing_address_same_as_shipping():
-            if shipping_address:
-                address = BillingAddress()
-                shipping_address.populate_alternative_model(address)
-                return address
+        if (
+            self.checkout_session.is_billing_address_same_as_shipping()
+            and shipping_address
+        ):
+            address = BillingAddress()
+            shipping_address.populate_alternative_model(address)
+            return address
 
         addr_data = self.checkout_session.new_billing_address_fields()
         if addr_data:

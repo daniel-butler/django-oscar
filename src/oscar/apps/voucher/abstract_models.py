@@ -56,7 +56,7 @@ class AbstractVoucherSet(models.Model):
     def generate_vouchers(self):
         """Generate vouchers for this set"""
         current_count = self.vouchers.count()
-        for i in range(current_count, self.count):
+        for _ in range(current_count, self.count):
             self.add_new()
 
     def add_new(self):

@@ -146,9 +146,10 @@ class AbstractCommunicationEventType(models.Model):
         ctx['static_base_url'] = getattr(
             settings, 'OSCAR_STATIC_BASE_URL', None)
 
-        messages = {}
-        for name, template in templates.items():
-            messages[name] = template.render(ctx) if template else ''
+        messages = {
+            name: template.render(ctx) if template else ''
+            for name, template in templates.items()
+        }
 
         # Ensure the email subject doesn't contain any newlines
         messages['subject'] = messages['subject'].replace("\n", "")

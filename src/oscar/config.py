@@ -31,7 +31,7 @@ class Shop(OscarConfig):
 
         from oscar.views.decorators import login_forbidden
 
-        urls = [
+        return [
             path('', RedirectView.as_view(url=settings.OSCAR_HOMEPAGE), name='home'),
             path('catalogue/', self.catalogue_app.urls),
             path('basket/', self.basket_app.urls),
@@ -73,4 +73,3 @@ class Shop(OscarConfig):
                 )),
                 name='password-reset-complete'),
         ]
-        return urls

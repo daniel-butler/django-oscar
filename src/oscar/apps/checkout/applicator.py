@@ -1,7 +1,7 @@
 class SurchargeList(list):
     @property
     def total(self):
-        return sum([surcharge.price for surcharge in self])
+        return sum(surcharge.price for surcharge in self)
 
 
 class SurchargePrice():

@@ -179,9 +179,8 @@ class ShippingAddressView(CheckoutSessionMixin, generic.FormView):
 
     def form_valid(self, form):
         # Store the address details in the session and redirect to next step
-        address_fields = dict(
-            (k, v) for (k, v) in form.instance.__dict__.items()
-            if not k.startswith('_'))
+        address_fields = {k: v for (k, v) in form.instance.__dict__.items()
+                if not k.startswith('_')}
         self.checkout_session.ship_to_new_address(address_fields)
         return super().form_valid(form)
 
@@ -678,10 +677,9 @@ class ThankYouView(generic.DetailView):
                 order = Order._default_manager.get(
                     id=self.request.GET['order_id'])
 
-        if not order:
-            if 'checkout_order_id' in self.request.session:
-                order = Order._default_manager.get(
-                    pk=self.request.session['checkout_order_id'])
+        if not order and 'checkout_order_id' in self.request.session:
+            order = Order._default_manager.get(
+                pk=self.request.session['checkout_order_id'])
         return order
 
     def get_context_data(self, *args, **kwargs):

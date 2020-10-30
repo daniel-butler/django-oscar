@@ -183,10 +183,11 @@ class OrderCreator(object):
             'unit_price_excl_tax': basket_line.unit_price_excl_tax,
         }
         extra_line_fields = extra_line_fields or {}
-        if hasattr(settings, 'OSCAR_INITIAL_LINE_STATUS'):
-            if not (extra_line_fields and 'status' in extra_line_fields):
-                extra_line_fields['status'] = getattr(
-                    settings, 'OSCAR_INITIAL_LINE_STATUS')
+        if hasattr(settings, 'OSCAR_INITIAL_LINE_STATUS') and not (
+            extra_line_fields and 'status' in extra_line_fields
+        ):
+            extra_line_fields['status'] = getattr(
+                settings, 'OSCAR_INITIAL_LINE_STATUS')
         if extra_line_fields:
             line_data.update(extra_line_fields)
 

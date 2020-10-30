@@ -54,18 +54,16 @@ class CatalogueImporter(object):
         """Imports given file"""
         stats = {'new_items': 0,
                  'updated_items': 0}
-        row_number = 0
         with open(file_path, 'rt') as f:
             reader = csv.reader(f, escapechar='\\')
-            for row in reader:
-                row_number += 1
+            for row_number, row in enumerate(reader, start=1):
                 self._import_row(row_number, row, stats)
         msg = "New items: %d, updated items: %d" % (stats['new_items'],
                                                     stats['updated_items'])
         self.logger.info(msg)
 
     def _import_row(self, row_number, row, stats):
-        if len(row) != 5 and len(row) != 9:
+        if len(row) not in [5, 9]:
             self.logger.error("Row number %d has an invalid number of fields"
                               " (%d), skipping..." % (row_number, len(row)))
             return

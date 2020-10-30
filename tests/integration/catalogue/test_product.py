@@ -51,7 +51,7 @@ class ProductCreationTests(ProductTests):
                           title='testing', upc='bah')
 
     def test_allow_two_products_without_upc(self):
-        for x in range(2):
+        for _ in range(2):
             Product.objects.create(product_class=self.product_class,
                                    title='testing', upc=None)
 
@@ -201,11 +201,14 @@ class ProductRecommendationTests(ProductTests):
         )
 
     def test_recommended_products_ordering(self):
-        secondary_products = []
-        for i in range(5):
-            secondary_products.append(Product.objects.create(
-                upc='secondary%s' % i, product_class=self.product_class, title='Secondary Product #%s' % i
-            ))
+        secondary_products = [
+            Product.objects.create(
+                upc='secondary%s' % i,
+                product_class=self.product_class,
+                title='Secondary Product #%s' % i,
+            )
+            for i in range(5)
+        ]
 
         ProductRecommendation.objects.create(
             primary=self.primary_product, recommendation=secondary_products[3], ranking=5)

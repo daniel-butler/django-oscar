@@ -99,7 +99,7 @@ class OfferWizardStepView(FormView):
         return self.previous_view.is_valid(self, request)
 
     def _key(self, step_name=None, is_object=False):
-        key = step_name if step_name else self.step_name
+        key = step_name or self.step_name
         if self.update:
             key += str(self.offer.id)
         if is_object:

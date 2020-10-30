@@ -49,8 +49,8 @@ def get_user_model():
 
     # Test if user model has any custom fields and add attributes to the _meta
     # class
-    core_fields = set([f.name for f in User._meta.fields])
-    model_fields = set([f.name for f in model._meta.fields])
+    core_fields = {f.name for f in User._meta.fields}
+    model_fields = {f.name for f in model._meta.fields}
     new_fields = model_fields.difference(core_fields)
     model._meta.has_additional_fields = len(new_fields) > 0
     model._meta.additional_fields = new_fields

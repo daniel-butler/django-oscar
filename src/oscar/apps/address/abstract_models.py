@@ -335,15 +335,15 @@ class AbstractAddress(models.Model):
         field_values = []
         for field in fields:
             # Title is special case
-            if field == 'title':
-                value = self.get_title_display()
-            elif field == 'country':
+            if field == 'country':
                 try:
                     value = self.country.printable_name
                 except exceptions.ObjectDoesNotExist:
                     value = ''
             elif field == 'salutation':
                 value = self.salutation
+            elif field == 'title':
+                value = self.get_title_display()
             else:
                 value = getattr(self, field)
             field_values.append(value)
@@ -353,8 +353,7 @@ class AbstractAddress(models.Model):
         """
         Returns set of field values within the salutation and country.
         """
-        field_values = [f.strip() for f in self.get_field_values(fields) if f]
-        return field_values
+        return [f.strip() for f in self.get_field_values(fields) if f]
 
     def generate_hash(self):
         """

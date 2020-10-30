@@ -9,7 +9,7 @@ from oscar.core.loading import get_model
 def generate_code(length, chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
                   group_length=4, separator='-'):
     """Create a string of 16 chars grouped by 4 chars."""
-    random_string = (i for i in get_random_string(length=length, allowed_chars=chars))
+    random_string = iter(get_random_string(length=length, allowed_chars=chars))
     return separator.join(
         ''.join(filter(None, a))
         for a in zip_longest(*[random_string] * group_length)

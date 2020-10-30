@@ -243,10 +243,7 @@ class AbstractOrder(models.Model):
         """
         Returns the number of items in this order.
         """
-        num_items = 0
-        for line in self.lines.all():
-            num_items += line.quantity
-        return num_items
+        return sum(line.quantity for line in self.lines.all())
 
     @property
     def shipping_tax(self):
@@ -299,10 +296,9 @@ class AbstractOrder(models.Model):
             event_map.setdefault(line_id, 0)
             event_map[line_id] += event_quantity.quantity
 
-        for line in self.lines.all():
-            if event_map.get(line.pk, 0) != line.quantity:
-                return False
-        return True
+        return all(
+            event_map.get(line.pk, 0) == line.quantity for line in self.lines.all()
+        )
 
     class Meta:
         abstract = True
@@ -570,10 +566,7 @@ class AbstractLine(models.Model):
         verbose_name_plural = _("Order Lines")
 
     def __str__(self):
-        if self.product:
-            title = self.product.title
-        else:
-            title = _('<missing product>')
+        title = self.product.title if self.product else _('<missing product>')
         return _("Product '%(name)s', quantity '%(qty)s'") % {
             'name': title, 'qty': self.quantity}
 
@@ -626,9 +619,11 @@ class AbstractLine(models.Model):
         line attributes.
         """
         desc = self.title
-        ops = []
-        for attribute in self.attributes.all():
-            ops.append("%s = '%s'" % (attribute.type, attribute.value))
+        ops = [
+            "%s = '%s'" % (attribute.type, attribute.value)
+            for attribute in self.attributes.all()
+        ]
+
         if ops:
             desc = "%s (%s)" % (desc, ", ".join(ops))
         return desc

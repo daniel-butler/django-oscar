@@ -43,14 +43,15 @@ class BasketMessageGenerator(object):
         return offer_messages
 
     def get_offer_messages(self, offers_before, offers_after):
-        offer_messages = []
-        offer_messages.extend(self.get_offer_lost_messages(offers_before, offers_after))
+        offer_messages = list(
+            self.get_offer_lost_messages(offers_before, offers_after)
+        )
+
         offer_messages.extend(self.get_offer_gained_messages(offers_before, offers_after))
         return offer_messages
 
     def get_messages(self, basket, offers_before, offers_after, include_buttons=True):
-        messages = []
-        messages.extend(self.get_offer_messages(offers_before, offers_after))
+        messages = list(self.get_offer_messages(offers_before, offers_after))
         messages.extend(self.get_new_total_messages(basket, include_buttons))
         return messages
 
@@ -83,7 +84,7 @@ class LineOfferConsumer(object):
 
     def __init__(self, line):
         self._line = line
-        self._offers = dict()
+        self._offers = {}
         self._affected_quantity = 0
         self._consumptions = defaultdict(int)
 
@@ -159,7 +160,7 @@ class LineOfferConsumer(object):
             applied = [x for x in self.consumers if x != offer]
 
             # find any *other* exclusive offers
-            if any([x.exclusive for x in applied]):
+            if any(x.exclusive for x in applied):
                 return 0
 
             # exclusive offers cannot be applied if any other

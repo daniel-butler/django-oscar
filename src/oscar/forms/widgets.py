@@ -208,7 +208,7 @@ class AdvancedSelect(forms.Select):
     """
 
     def __init__(self, attrs=None, choices=(), disabled_values=()):
-        self.disabled_values = set(force_str(v) for v in disabled_values)
+        self.disabled_values = {force_str(v) for v in disabled_values}
         super().__init__(attrs, choices)
 
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
@@ -274,7 +274,7 @@ class RemoteSelect(forms.Select):
                 str(option_value) in value
                 and (has_selected is False or self.allow_multiple_selected)
             )
-            if selected is True and has_selected is False:
+            if selected is True and not has_selected:
                 has_selected = True
             index = len(default[1])
             subgroup = default[1]

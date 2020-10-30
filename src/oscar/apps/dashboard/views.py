@@ -77,7 +77,7 @@ class IndexView(TemplateView):
         start_time = time_now - timedelta(hours=hours - 1)
 
         order_total_hourly = []
-        for hour in range(0, hours, 2):
+        for _ in range(0, hours, 2):
             end_time = start_time + timedelta(hours=2)
             hourly_orders = orders.filter(date_placed__gte=start_time,
                                           date_placed__lt=end_time)
@@ -90,32 +90,30 @@ class IndexView(TemplateView):
             })
             start_time = end_time
 
-        max_value = max([x['total_incl_tax'] for x in order_total_hourly])
+        max_value = max(x['total_incl_tax'] for x in order_total_hourly)
         divisor = 1
         while divisor < max_value / 50:
             divisor *= 10
         max_value = (max_value / divisor).quantize(D('1'), rounding=ROUND_UP)
         max_value *= divisor
+        y_range = []
         if max_value:
             segment_size = (max_value) / D('100.0')
             for item in order_total_hourly:
                 item['percentage'] = int(item['total_incl_tax'] / segment_size)
 
-            y_range = []
             y_axis_steps = max_value / D(str(segments))
             for idx in reversed(range(segments + 1)):
                 y_range.append(idx * y_axis_steps)
         else:
-            y_range = []
             for item in order_total_hourly:
                 item['percentage'] = 0
 
-        ctx = {
+        return {
             'order_total_hourly': order_total_hourly,
             'max_revenue': max_value,
             'y_range': y_range,
         }
-        return ctx
 
     def get_stats(self):
         datetime_24hrs_ago = now() - timedelta(hours=24)
@@ -238,10 +236,7 @@ class PopUpWindowCreateUpdateMixin(PopUpWindowMixin):
 class PopUpWindowCreateMixin(PopUpWindowCreateUpdateMixin):
 
     def popup_response(self, obj):
-        if self.to_field:
-            attr = str(self.to_field)
-        else:
-            attr = obj._meta.pk.attname
+        attr = str(self.to_field) if self.to_field else obj._meta.pk.attname
         value = obj.serializable_value(attr)
         popup_response_data = json.dumps({
             'value': str(value),
@@ -258,10 +253,7 @@ class PopUpWindowUpdateMixin(PopUpWindowCreateUpdateMixin):
 
     def popup_response(self, obj):
         opts = obj._meta
-        if self.to_field:
-            attr = str(self.to_field)
-        else:
-            attr = opts.pk.attname
+        attr = str(self.to_field) if self.to_field else opts.pk.attname
         # Retrieve the `object_id` from the resolved pattern arguments.
         value = self.request.resolver_match.kwargs['pk']
         new_value = obj.serializable_value(attr)

@@ -235,10 +235,10 @@ class BasketView(ModelFormSetView):
 
     def formset_invalid(self, formset):
         has_deletion = any(formset._should_delete_form(form) for form in formset.forms)
-        has_no_invalid_non_deletion = all(form.is_valid() or formset._should_delete_form(form)
-                                          for form in formset.forms)
         if has_deletion:
             self.remove_deleted_forms(formset)
+            has_no_invalid_non_deletion = all(form.is_valid() or formset._should_delete_form(form)
+                                              for form in formset.forms)
             if has_no_invalid_non_deletion:
                 return self.formset_valid(formset)
 
@@ -326,9 +326,7 @@ class BasketAddView(FormView):
         return kwargs
 
     def form_invalid(self, form):
-        msgs = []
-        for error in form.errors.values():
-            msgs.append(error.as_text())
+        msgs = [error.as_text() for error in form.errors.values()]
         clean_msgs = [m.replace('* ', '') for m in msgs if m.startswith('* ')]
         messages.error(self.request, ",".join(clean_msgs))
 

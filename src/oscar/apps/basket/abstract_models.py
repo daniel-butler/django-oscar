@@ -348,10 +348,7 @@ class AbstractBasket(models.Model):
         Test whether the basket contains physical products that require
         shipping.
         """
-        for line in self.all_lines():
-            if line.product.is_shipping_required:
-                return True
-        return False
+        return any(line.product.is_shipping_required for line in self.all_lines())
 
     # =======
     # Helpers
@@ -386,7 +383,6 @@ class AbstractBasket(models.Model):
                 info = self.get_stock_info(line.product, line.attributes.all())
                 if info.availability.is_available_to_buy:
                     raise
-                pass
         return total
 
     # ==========
@@ -405,7 +401,7 @@ class AbstractBasket(models.Model):
         """
         Test if tax values are known for this basket
         """
-        return all([line.is_tax_known for line in self.all_lines()])
+        return all(line.is_tax_known for line in self.all_lines())
 
     @property
     def total_excl_tax(self):
@@ -497,17 +493,11 @@ class AbstractBasket(models.Model):
 
     @property
     def num_items_without_discount(self):
-        num = 0
-        for line in self.all_lines():
-            num += line.quantity_without_discount
-        return num
+        return sum(line.quantity_without_discount for line in self.all_lines())
 
     @property
     def num_items_with_discount(self):
-        num = 0
-        for line in self.all_lines():
-            num += line.quantity_with_discount
-        return num
+        return sum(line.quantity_with_discount for line in self.all_lines())
 
     @property
     def time_before_submit(self):
@@ -876,9 +866,11 @@ class AbstractLine(models.Model):
     @property
     def description(self):
         d = smart_str(self.product)
-        ops = []
-        for attribute in self.attributes.all():
-            ops.append("%s = '%s'" % (attribute.option.name, attribute.value))
+        ops = [
+            "%s = '%s'" % (attribute.option.name, attribute.value)
+            for attribute in self.attributes.all()
+        ]
+
         if ops:
             d = "%s (%s)" % (d, ", ".join(ops))
         return d
@@ -910,12 +902,12 @@ class AbstractLine(models.Model):
                 warning = _("The price of '%(product)s' has increased from"
                             " %(old_price)s to %(new_price)s since you added"
                             " it to your basket")
-                return warning % product_prices
             else:
                 warning = _("The price of '%(product)s' has decreased from"
                             " %(old_price)s to %(new_price)s since you added"
                             " it to your basket")
-                return warning % product_prices
+
+            return warning % product_prices
 
 
 class AbstractLineAttribute(models.Model):

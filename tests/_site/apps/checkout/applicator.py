@@ -13,10 +13,4 @@ class SurchargeApplicator(BaseSurchargeApplicator):
         )
 
     def is_applicable(self, surcharge, basket, **kwargs):
-        if surcharge.incl_tax > surcharge.excl_tax:
-            if basket.is_tax_known:
-                return True
-        else:
-            return True
-
-        return False
+        return bool(basket.is_tax_known or surcharge.incl_tax <= surcharge.excl_tax)

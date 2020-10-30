@@ -107,7 +107,7 @@ def create_product(upc=None, title="Dùｍϻϒ title",
     # Shortcut for creating stockrecord
     stockrecord_fields = [
         price, partner_sku, partner_name, num_in_stock, partner_users]
-    if any([field is not None for field in stockrecord_fields]):
+    if any(field is not None for field in stockrecord_fields):
         create_stockrecord(
             product, price=price, num_in_stock=num_in_stock,
             partner_users=partner_users, partner_sku=partner_sku,
@@ -126,8 +126,7 @@ def create_product_image(product=None,
         if not product.images.all():
             display_order = 0
         else:
-            display_order = max(
-                [i.display_order for i in product.images.all()]) + 1
+            display_order = max(i.display_order for i in product.images.all()) + 1
 
     kwargs = {'product_id': product.id,
               'original': original,

@@ -55,11 +55,15 @@ class CountCondition(Condition):
     def _get_num_matches(self, basket, offer):
         if hasattr(self, '_num_matches'):
             return getattr(self, '_num_matches')
-        num_matches = 0
-        for line in basket.all_lines():
-            if (self.can_apply_condition(line)
-                    and line.quantity_without_offer_discount(offer) > 0):
-                num_matches += line.quantity_without_offer_discount(offer)
+        num_matches = sum(
+            line.quantity_without_offer_discount(offer)
+            for line in basket.all_lines()
+            if (
+                self.can_apply_condition(line)
+                and line.quantity_without_offer_discount(offer) > 0
+            )
+        )
+
         self._num_matches = num_matches
         return num_matches
 
@@ -85,9 +89,7 @@ class CountCondition(Condition):
         """
         # We need to count how many items have already been consumed as part of
         # applying the benefit, so we don't consume too many items.
-        num_consumed = 0
-        for line, __, quantity in affected_lines:
-            num_consumed += quantity
+        num_consumed = sum(quantity for line, __, quantity in affected_lines)
         to_consume = max(0, self.value - num_consumed)
         if to_consume == 0:
             return
@@ -168,10 +170,7 @@ class CoverageCondition(Condition):
         """
         # Determine products that have already been consumed by applying the
         # benefit
-        consumed_products = []
-        for line, __, quantity in affected_lines:
-            consumed_products.append(line.product)
-
+        consumed_products = [line.product for line, __, quantity in affected_lines]
         to_consume = max(0, self.value - len(consumed_products))
         if to_consume == 0:
             return

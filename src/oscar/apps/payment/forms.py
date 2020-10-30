@@ -18,7 +18,7 @@ Bankcard = get_model('payment', 'Bankcard')
 AbstractAddressForm = get_class('address.forms', 'AbstractAddressForm')
 
 # List of card names for all the card types supported in payment.bankcards
-VALID_CARDS = set([card_type[0] for card_type in bankcards.CARD_TYPES])
+VALID_CARDS = {card_type[0] for card_type in bankcards.CARD_TYPES}
 
 
 class BankcardNumberField(forms.CharField):
@@ -240,10 +240,9 @@ class BankcardForm(forms.ModelForm):
     def clean(self):
         data = self.cleaned_data
         number, ccv = data.get('number'), data.get('ccv')
-        if number and ccv:
-            if bankcards.is_amex(number) and len(ccv) != 4:
-                raise forms.ValidationError(_(
-                    "American Express cards use a 4 digit security code"))
+        if number and ccv and bankcards.is_amex(number) and len(ccv) != 4:
+            raise forms.ValidationError(_(
+                "American Express cards use a 4 digit security code"))
         return data
 
     def save(self, *args, **kwargs):

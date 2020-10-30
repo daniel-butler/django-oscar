@@ -330,16 +330,21 @@ class ProductCreateUpdateView(generic.UpdateView):
         if self.creating and form.is_valid():
             self.object = form.save()
 
-        formsets = {}
-        for ctx_name, formset_class in self.formsets.items():
-            formsets[ctx_name] = formset_class(self.product_class,
-                                               self.request.user,
-                                               self.request.POST,
-                                               self.request.FILES,
-                                               instance=self.object)
+        formsets = {
+            ctx_name: formset_class(
+                self.product_class,
+                self.request.user,
+                self.request.POST,
+                self.request.FILES,
+                instance=self.object,
+            )
+            for ctx_name, formset_class in self.formsets.items()
+        }
 
-        is_valid = form.is_valid() and all([formset.is_valid()
-                                            for formset in formsets.values()])
+        is_valid = form.is_valid() and all(
+            formset.is_valid() for formset in formsets.values()
+        )
+
 
         cross_form_validation_result = self.clean(form, formsets)
         if is_valid and cross_form_validation_result:
@@ -749,8 +754,7 @@ class ProductClassUpdateView(ProductClassCreateUpdateView):
         return reverse("dashboard:catalogue-class-list")
 
     def get_object(self):
-        product_class = get_object_or_404(ProductClass, pk=self.kwargs['pk'])
-        return product_class
+        return get_object_or_404(ProductClass, pk=self.kwargs['pk'])
 
 
 class ProductClassListView(generic.ListView):
@@ -873,8 +877,7 @@ class AttributeOptionGroupUpdateView(PopUpWindowUpdateMixin, AttributeOptionGrou
     creating = False
 
     def get_object(self):
-        attribute_option_group = get_object_or_404(AttributeOptionGroup, pk=self.kwargs['pk'])
-        return attribute_option_group
+        return get_object_or_404(AttributeOptionGroup, pk=self.kwargs['pk'])
 
     def get_title(self):
         return _("Update Attribute Option Group '%s'") % self.object.name
@@ -992,8 +995,7 @@ class OptionUpdateView(PopUpWindowUpdateMixin, OptionCreateUpdateView):
     creating = False
 
     def get_object(self):
-        attribute_option_group = get_object_or_404(Option, pk=self.kwargs['pk'])
-        return attribute_option_group
+        return get_object_or_404(Option, pk=self.kwargs['pk'])
 
     def get_title(self):
         return _("Update Option '%s'") % self.object.name

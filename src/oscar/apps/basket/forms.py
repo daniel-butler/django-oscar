@@ -183,11 +183,7 @@ class AddToBasketForm(forms.Form):
             # Build a description of the child, including any pertinent
             # attributes
             attr_summary = child.attribute_summary
-            if attr_summary:
-                summary = attr_summary
-            else:
-                summary = child.get_title()
-
+            summary = attr_summary or child.get_title()
             # Check if it is available to buy
             info = self.basket.strategy.fetch_for_product(child)
             if not info.availability.is_available_to_buy:
@@ -290,13 +286,11 @@ class AddToBasketForm(forms.Form):
         """
         Return submitted options in a clean format
         """
-        options = []
-        for option in self.parent_product.options:
-            if option.code in self.cleaned_data:
-                options.append({
-                    'option': option,
-                    'value': self.cleaned_data[option.code]})
-        return options
+        return [
+            {'option': option, 'value': self.cleaned_data[option.code]}
+            for option in self.parent_product.options
+            if option.code in self.cleaned_data
+        ]
 
 
 class SimpleAddToBasketMixin:

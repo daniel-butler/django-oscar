@@ -70,7 +70,7 @@ class TestMultiuseVoucher(TestCase):
 
     def test_is_available_to_same_user_multiple_times(self):
         user, order = UserFactory(), OrderFactory()
-        for i in range(10):
+        for _ in range(10):
             self.voucher.record_usage(order, user)
             is_voucher_available_to_user, __ = self.voucher.is_available_to_user(user=user)
             self.assertTrue(is_voucher_available_to_user)

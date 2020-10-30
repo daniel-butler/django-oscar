@@ -194,9 +194,10 @@ class TestConditionForm(TestCase):
                 'range': '',
                 'type': '',
                 'value': '',
-                'custom_condition': ''
+                'custom_condition': '',
+                field: value,
             }
-            data[field] = value
+
             form = forms.ConditionForm(data=data)
             self.assertFalse(form.is_valid())
 

@@ -230,11 +230,7 @@ class AbstractConditionalOffer(models.Model):
     def save(self, *args, **kwargs):
         # Check to see if consumption thresholds have been broken
         if not self.is_suspended:
-            if self.get_max_applications() == 0:
-                self.status = self.CONSUMED
-            else:
-                self.status = self.OPEN
-
+            self.status = self.CONSUMED if self.get_max_applications() == 0 else self.OPEN
         return super().save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -646,7 +642,7 @@ class AbstractBenefit(BaseOfferMixin, models.Model):
         Return the maximum number of items that can have a discount applied
         during the application of this benefit
         """
-        return self.max_affected_items if self.max_affected_items else 10000
+        return self.max_affected_items or 10000
 
     def can_apply_benefit(self, line):
         """

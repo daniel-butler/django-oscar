@@ -30,7 +30,7 @@ class AttributeFilter(dict):
         return self.keys()
 
     def _selector(self, attribute_type):
-        if attribute_type == "option" or attribute_type == "multi_option":
+        if attribute_type in ["option", "multi_option"]:
             return "attribute_values__value_%s__option" % attribute_type
         else:
             return "attribute_values__value_%s" % attribute_type
@@ -42,8 +42,7 @@ class AttributeFilter(dict):
             if lookup is not None:
                 sel = "%s%s%s" % (sel, LOOKUP_SEP, lookup)
 
-            kwargs = dict()
-            kwargs[sel] = value
+            kwargs = {sel: value}
             _filter |= models.Q(**kwargs)
 
         return _filter
@@ -58,8 +57,7 @@ class AttributeFilter(dict):
         for code, (lookup, value) in self.items():
             selected_values = self._select_value(typedict[code], lookup, value)
             if not selected_values:  # if no value clause can be formed, no result can be formed.
-                return queryset.none()
-
+                return qs.none()
             qs = qs.filter(
                 selected_values,
                 attribute_values__attribute__code=code,
